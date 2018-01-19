@@ -935,7 +935,7 @@ to the target graph, overwriting any existing attributes.
 =item feather_import_from($compatible_graph)
 
 Adds vertices, edges, their attributes, and any graph attributes
-from the other graphs, overwriting any existing attributes.
+from the other graph, overwriting any existing attributes.
 
 =back
 
