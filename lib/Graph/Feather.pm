@@ -4,7 +4,7 @@ use warnings;
 use DBI;
 use DBD::SQLite;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub new {
   my ($class, %options) = @_;
@@ -161,7 +161,9 @@ sub _prepare {
 
   # TODO(bh): As of 2018-02 effect/purpose of %attr seems
   # undefined in DBI documentation. So we fail on them here.
-  ... if $attr or @other;
+  if ($attr or @other) {
+    ...
+  }
 
   $self->{cache}{$statement} //= $self->{dbh}->prepare($statement);
   return $self->{cache}{$statement};

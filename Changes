@@ -1,3 +1,7 @@
+0.04 February 2018
+- Fix for https://rt.cpan.org/Public/Bug/Display.html?id=124457 /
+  https://github.com/hoehrmann/Graph-Feather/issues/1
+
 0.03 February 2018
 - Allow undef as attribute value
 
