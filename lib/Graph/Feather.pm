@@ -4,7 +4,7 @@ use warnings;
 use DBI;
 use DBD::SQLite;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub new {
   my ($class, %options) = @_;
@@ -28,8 +28,8 @@ sub new {
     -- Pragmata
     -----------------------------------------------------------------
 
-    PRAGMA foreign_keys=ON;
-    PRAGMA synchronous=OFF;
+    PRAGMA foreign_keys = ON;
+    PRAGMA synchronous  = OFF;
     PRAGMA journal_mode = OFF;
     PRAGMA locking_mode = EXCLUSIVE;
 
@@ -39,7 +39,7 @@ sub new {
 
     CREATE TABLE Graph_Attribute(
       attribute_name UNIQUE NOT NULL,
-      attribute_value NOT NULL
+      attribute_value
     );
 
     -----------------------------------------------------------------
@@ -53,7 +53,7 @@ sub new {
     CREATE TABLE Vertex_Attribute(
       vertex NOT NULL,
       attribute_name NOT NULL,
-      attribute_value NOT NULL,
+      attribute_value,
       UNIQUE(vertex, attribute_name),
       FOREIGN KEY (vertex)
         REFERENCES Vertex(vertex_name)
@@ -90,10 +90,10 @@ sub new {
       src NOT NULL,
       dst NOT NULL,
       attribute_name NOT NULL,
-      attribute_value NOT NULL,
+      attribute_value,
       UNIQUE(src, dst, attribute_name),
-      FOREIGN KEY (src,dst)
-        REFERENCES Edge(src,dst)
+      FOREIGN KEY (src, dst)
+        REFERENCES Edge(src, dst)
         ON DELETE CASCADE
         ON UPDATE NO ACTION
     );

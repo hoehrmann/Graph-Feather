@@ -1,3 +1,6 @@
+0.03 February 2018
+- Allow undef as attribute value
+
 0.02 February 2018
 - internal: more TODO comments
 - internal: use _prepare method throughout
