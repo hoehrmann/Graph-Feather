@@ -3,8 +3,15 @@ use strict;
 use warnings;
 use DBI;
 use DBD::SQLite;
+use version;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
+
+our $VERSION_INT =
+  1_000_000 * version->parse($VERSION)->numify;
+
+# Archive::Zip crc32 of 'Graph::Feather'
+our $APPLICATION_ID = -801604570;
 
 sub new {
   my ($class, %options) = @_;
@@ -21,6 +28,11 @@ sub new {
 
   ###################################################################
   # Deploy DB schema
+
+  $self->{dbh}->do(sprintf q{
+    PRAGMA application_id = %i;
+    PRAGMA user_version = %u;
+  }, $APPLICATION_ID, $VERSION_INT);
 
   $self->{dbh}->do(q{
 
@@ -819,6 +831,8 @@ sub _copy_vertices_edges_attributes {
   # copy edges
   $rhs->add_edges($lhs->edges);
 
+  # TODO(bh): use new plural methods instead
+
   # copy graph attributes
   for my $n ($lhs->get_graph_attribute_names) {
     $rhs->set_graph_attribute($n,
@@ -851,6 +865,50 @@ sub feather_export_to {
 sub feather_import_from {
   my ($self, $source) = @_;
   _copy_vertices_edges_attributes($source, $self);
+}
+
+sub _feather_restore_from_file {
+  my ($self, $path) = @_;
+
+  $self->{dbh}->begin_work();
+
+  $self->{dbh}->sqlite_backup_from_file($path);
+
+  my $sth1 = $self->_prepare(q{
+    PRAGMA application_id
+  });
+
+  my ($application_id) = $self->{dbh}->selectrow_array($sth1);
+
+  my $sth2 = $self->_prepare(q{
+    PRAGMA user_version
+  });
+
+  my ($user_version) = $self->{dbh}->selectrow_array($sth2);
+
+  die "$path was not created by this version of Graph::Feather"
+    unless $application_id eq $APPLICATION_ID
+      and $user_version eq $VERSION_INT;
+
+  $self->{dbh}->commit();
+
+  # The following is needed because attribute values have a
+  # dual life to support Perl references as attribute values.
+
+  $self->set_graph_attribute(@$_) for
+    $self->{dbh}->selectall_array(q{
+      SELECT attribute_name, attribute_value
+      FROM Graph_Attribute});
+
+  $self->set_vertex_attribute(@$_) for
+    $self->{dbh}->selectall_array(q{
+      SELECT vertex, attribute_name, attribute_value
+      FROM Vertex_Attribute});
+
+  $self->set_edge_attribute(@$_) for
+    $self->{dbh}->selectall_array(q{
+      SELECT src, dst, attribute_name, attribute_value
+      FROM Edge_Attribute});
 }
 
 1;
