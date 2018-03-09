@@ -5,7 +5,7 @@ use DBI;
 use DBD::SQLite;
 use version;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 our $VERSION_INT =
   1_000_000 * version->parse($VERSION)->numify;
@@ -242,10 +242,24 @@ sub delete_vertices {
 
 sub delete_edge {
   my ($self, $src, $dst) = @_;
-  delete_edges($self, [$src, $dst]);
+  feather_delete_edges($self, [$src, $dst]);
 }
 
 sub delete_edges {
+  my ($self, @vertices) = @_;
+  my @edges;
+
+  while (@vertices) {
+    my ($src, $dst) = splice @vertices, 0, 2;
+    warn 'delete_edges takes vertex list, not list of vertex pairs'
+      if ref $src; 
+    push @edges, [ $src, $dst ];
+  }
+
+  $self->feather_delete_edges(@edges);
+}
+
+sub feather_delete_edges {
   my ($self, @edges) = @_;
   
   delete_edge_attributes($self, @$_) for @edges;
@@ -1073,6 +1087,12 @@ to the target graph, overwriting any existing attributes.
 
 Adds vertices, edges, their attributes, and any graph attributes
 from the other graph, overwriting any existing attributes.
+
+=item feather_delete_edges(@edges)
+
+In the original Graph module, C<delete_edges> takes a flat list of
+vertices instead of a list of vertex pairs. This function takes a
+list of vertex pairs instead.
 
 =back
 
