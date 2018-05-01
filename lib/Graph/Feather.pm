@@ -4,8 +4,9 @@ use warnings;
 use DBI;
 use DBD::SQLite;
 use version;
+use Scalar::Util;
 
-our $VERSION = '0.09';
+our $VERSION = '0.12';
 
 our $VERSION_INT =
   1_000_000 * version->parse($VERSION)->numify;
@@ -147,9 +148,11 @@ sub new {
   ###################################################################
   # Register hook to synchronise attribute Perl objects
 
+  my $backref = $self;
+  Scalar::Util::weaken($backref);
   $self->{dbh}->sqlite_update_hook(sub {
     return unless $_[0] == 9; # DBD::SQLite::DELETE
-    delete $self->{ $_[2] }{ $_[3] };
+    delete $backref->{ $_[2] }{ $_[3] };
   });
 
   ###################################################################

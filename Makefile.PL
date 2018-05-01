@@ -14,6 +14,7 @@ WriteMakefile(
     'List::UtilsBy'   => 0,
     'Graph::Directed' => 0,
     'JSON'            => 0,
+    'Scalar::Util'    => 0,
   },
   ($] >= 5.005 ?     
     (ABSTRACT_FROM  => 'lib/Graph/Feather.pm', # retrieve abstract from module
